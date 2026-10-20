@@ -2,10 +2,11 @@ package br.com.olariafriburgo.backend.service;
 
 import br.com.olariafriburgo.backend.model.Produto;
 import br.com.olariafriburgo.backend.repository.ProdutoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ProdutoService {
@@ -16,19 +17,16 @@ public class ProdutoService {
         this.produtoRepository = produtoRepository;
     }
 
+    private ResponseStatusException naoEncontrado() {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Produto não encontrado");
+    }
+
     public List<Produto> listarProdutos() {
         return produtoRepository.findAll();
     }
 
     public Produto buscarPorId(Long id) {
-
-        Optional<Produto> produto = produtoRepository.findById(id);
-
-        if (produto.isEmpty()) {
-            throw new RuntimeException("Produto não encontrado");
-        }
-
-        return produto.get();
+        return produtoRepository.findById(id).orElseThrow(this::naoEncontrado);
     }
 
     public Produto salvarProduto(Produto produto) {
@@ -36,14 +34,7 @@ public class ProdutoService {
     }
 
     public Produto atualizarProduto(Long id, Produto produto) {
-
-        Optional<Produto> produtoExistente = produtoRepository.findById(id);
-
-        if (produtoExistente.isEmpty()) {
-            throw new RuntimeException("Produto não encontrado");
-        }
-
-        Produto produtoAtual = produtoExistente.get();
+        Produto produtoAtual = buscarPorId(id);
 
         produtoAtual.setNome(produto.getNome());
         produtoAtual.setCategoria(produto.getCategoria());
@@ -55,11 +46,9 @@ public class ProdutoService {
     }
 
     public void deletarProduto(Long id) {
-
         if (!produtoRepository.existsById(id)) {
-            throw new RuntimeException("Produto não encontrado");
+            throw naoEncontrado();
         }
-
         produtoRepository.deleteById(id);
     }
 }
