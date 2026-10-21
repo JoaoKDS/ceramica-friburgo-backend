@@ -2,6 +2,7 @@ package br.com.olariafriburgo.backend.service;
 
 import br.com.olariafriburgo.backend.model.Produto;
 import br.com.olariafriburgo.backend.repository.ProdutoRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,7 +23,10 @@ public class ProdutoService {
     }
 
     public List<Produto> listarProdutos() {
-        return produtoRepository.findAll();
+        // Sempre na mesma ordem (do mais antigo para o mais novo). Sem isso, o
+        // banco pode mudar a ordem depois de uma edição e o produto "pula" de
+        // lugar no catálogo do site.
+        return produtoRepository.findAll(Sort.by("id"));
     }
 
     public Produto buscarPorId(Long id) {
